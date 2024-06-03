@@ -3,8 +3,8 @@ from app.database.db import Base
 
 class Meal(Base):
   __tablename__ = "meals"
-  id: int = Column(Integer, primary_key=True, index=True)
-  name: str = Column(String(50), nullable=False)
-  device_id: int = Column(Integer, ForeignKey("feeder_devices.id"))
-  weight: str = Column(String(20), nullable=False)
-  time: str = Column(String(10), nullable=False)
+  id = Column(Integer, primary_key=True, index=True)
+  name = Column(String(50), nullable=False, unique=True)
+  device_id = Column(Integer, ForeignKey("feeder_devices.id"))
+  weight = Column(String(20), nullable=False)
+  time = Column(String(10), nullable=False)

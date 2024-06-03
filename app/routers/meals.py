@@ -1,15 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Path, Response, status, HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.database.schemas import MealsRequest, MealsResponse
 from app.models.meals import Meal
-from app.mqtt_client.pub import run as pub_mqtt
-from app.mqtt_client.sub import run as sub_mqtt
 from app.repositories.meals_repository import MealsRepository
-from app.mqtt_client.constants import main_topic, realtime_weight_subtopic, realtime_weight_response_subtopic, device_mac_address, device_mac_address_response, reconnect_device_wifi
+from app.mqtt_client.pub import run as pub_mqtt
+from app.mqtt_client.constants import activate_meal
 
 meals_router = APIRouter(prefix="/meals")
 
@@ -30,11 +27,14 @@ def get_meal(meal_id: Annotated[int, Path(description="The ID of the meal you wa
 @meals_router.post("", response_model=MealsResponse, status_code=status.HTTP_201_CREATED, summary="Create meal")
 def create_meal(request: MealsRequest, db: Session = Depends(get_db)):
   meal_data = request.dict()
-  
-  # meal_data = MealsRepository.save(db, Meal(**request.dict()))
   meal = Meal(**meal_data)
   saved_meal = MealsRepository.save(db, meal)
   return MealsResponse.from_orm(saved_meal)
+
+@meals_router.post("/activate-meal", status_code=status.HTTP_200_OK, summary="Activate meal")
+def activate_meal_mqtt():
+  pub_mqtt("Ativar refeicao", activate_meal)
+  return 
 
 @meals_router.put("/id/{meal_id}", summary="Update meal by ID", response_model=MealsResponse)
 def update(meal_id: int, request: MealsRequest, db: Session = Depends(get_db)):
