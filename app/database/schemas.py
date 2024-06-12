@@ -12,6 +12,9 @@ class MealsBase(BaseModel):
   
 class MealsRequest(MealsBase):
   ...
+  
+class ActivateMealRequest(BaseModel):
+  weight: int
 
 class MealsResponse(MealsBase):
   id: int

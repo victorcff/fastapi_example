@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, status, HTTPException
 from sqlalchemy.orm import Session
 from app.database.db import get_db
-from app.database.schemas import MealsRequest, MealsResponse
+from app.database.schemas import MealsRequest, MealsResponse, ActivateMealRequest
 from app.models.meals import Meal
 from app.repositories.meals_repository import MealsRepository
 from app.mqtt_client.pub import run as pub_mqtt
@@ -32,9 +32,9 @@ def create_meal(request: MealsRequest, db: Session = Depends(get_db)):
   return MealsResponse.from_orm(saved_meal)
 
 @meals_router.post("/activate-meal", status_code=status.HTTP_200_OK, summary="Activate meal")
-def activate_meal_mqtt():
-  pub_mqtt("Ativar refeicao", activate_meal)
-  return 
+def activate_meal_mqtt(request: ActivateMealRequest):
+  pub_mqtt(f"{request.weight}", activate_meal)
+  return "ok"
 
 @meals_router.put("/id/{meal_id}", summary="Update meal by ID", response_model=MealsResponse)
 def update(meal_id: int, request: MealsRequest, db: Session = Depends(get_db)):
